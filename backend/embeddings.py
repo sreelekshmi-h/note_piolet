@@ -2,17 +2,18 @@ from sentence_transformers import SentenceTransformer
 
 
 # --------------------------------
-# Embedding model configuration
+# Embedding model
 # --------------------------------
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 
-# Model will NOT be loaded immediately
+# Do not load the model when the application starts.
+# It will be loaded only when an embedding is actually needed.
 embedding_model = None
 
 
 # --------------------------------
-# Load embedding model only when needed
+# Get embedding model
 # --------------------------------
 
 def get_embedding_model():
@@ -44,7 +45,8 @@ def create_embeddings(texts):
     model = get_embedding_model()
 
     embeddings = model.encode(
-        texts
+        texts,
+        batch_size=8
     )
 
     return embeddings.tolist()
@@ -61,8 +63,6 @@ def create_embedding(text):
 
     model = get_embedding_model()
 
-    embedding = model.encode(
-        text
-    )
+    embedding = model.encode(text)
 
     return embedding.tolist()
