@@ -1,7 +1,8 @@
+fastapi
+uvicorn
+python-multipart
 chromadb
 sentence-transformers
 pymupdf
 groq
 python-dotenv
-streamlit
-requests
