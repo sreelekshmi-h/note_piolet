@@ -2,12 +2,34 @@ from sentence_transformers import SentenceTransformer
 
 
 # --------------------------------
-# Embedding model
+# Embedding model configuration
 # --------------------------------
 
 MODEL_NAME = "all-MiniLM-L6-v2"
 
-embedding_model = SentenceTransformer(MODEL_NAME)
+# Model will NOT be loaded immediately
+embedding_model = None
+
+
+# --------------------------------
+# Load embedding model only when needed
+# --------------------------------
+
+def get_embedding_model():
+
+    global embedding_model
+
+    if embedding_model is None:
+
+        print("Loading embedding model...")
+
+        embedding_model = SentenceTransformer(
+            MODEL_NAME
+        )
+
+        print("Embedding model loaded.")
+
+    return embedding_model
 
 
 # --------------------------------
@@ -19,7 +41,11 @@ def create_embeddings(texts):
     Convert a list of text chunks into embeddings.
     """
 
-    embeddings = embedding_model.encode(texts)
+    model = get_embedding_model()
+
+    embeddings = model.encode(
+        texts
+    )
 
     return embeddings.tolist()
 
@@ -33,6 +59,10 @@ def create_embedding(text):
     Convert a single text/query into an embedding.
     """
 
-    embedding = embedding_model.encode(text)
+    model = get_embedding_model()
+
+    embedding = model.encode(
+        text
+    )
 
     return embedding.tolist()
