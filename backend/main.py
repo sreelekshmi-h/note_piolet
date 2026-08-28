@@ -1,10 +1,19 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import (
+    FastAPI,
+    UploadFile,
+    File,
+    HTTPException
+)
+
 from pydantic import BaseModel
 
 import os
 import shutil
 
-from rag import process_pdf, generate_answer
+from rag import (
+    process_pdf,
+    generate_answer
+)
 
 
 # --------------------------------
@@ -69,7 +78,9 @@ async def upload_pdf(
 
     # Check file type
 
-    if not file.filename.lower().endswith(".pdf"):
+    if not file.filename.lower().endswith(
+        ".pdf"
+    ):
 
         raise HTTPException(
             status_code=400,
@@ -77,17 +88,29 @@ async def upload_pdf(
         )
 
 
-    # Create file path
+    # --------------------------------
+    # Create safe file name
+    # --------------------------------
 
-    file_path = os.path.join(
-        DATA_DIR,
+    filename = os.path.basename(
         file.filename
     )
 
 
-    # Save uploaded PDF
+    file_path = os.path.join(
+        DATA_DIR,
+        filename
+    )
 
-    with open(file_path, "wb") as buffer:
+
+    # --------------------------------
+    # Save uploaded PDF
+    # --------------------------------
+
+    with open(
+        file_path,
+        "wb"
+    ) as buffer:
 
         shutil.copyfileobj(
             file.file,
@@ -95,16 +118,49 @@ async def upload_pdf(
         )
 
 
+    # --------------------------------
     # Process PDF
+    # --------------------------------
 
-    chunks_added = process_pdf(
-        file_path
-    )
+    try:
+
+        chunks_added = process_pdf(
+            file_path
+        )
+
+    except Exception as e:
+
+        # Delete failed upload
+
+        if os.path.exists(file_path):
+
+            os.remove(file_path)
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"PDF processing failed: {str(e)}"
+        )
+
+
+    # --------------------------------
+    # Check PDF content
+    # --------------------------------
+
+    if chunks_added == 0:
+
+        return {
+            "message": (
+                "PDF uploaded, but no readable "
+                "text was found."
+            ),
+            "filename": filename,
+            "chunks_added": 0
+        }
 
 
     return {
         "message": "PDF uploaded successfully",
-        "filename": file.filename,
+        "filename": filename,
         "chunks_added": chunks_added
     }
 
@@ -118,9 +174,34 @@ def ask_question(
     request: QuestionRequest
 ):
 
-    result = generate_answer(
-        request.question
-    )
+    # --------------------------------
+    # Validate question
+    # --------------------------------
+
+    if not request.question.strip():
+
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty"
+        )
+
+
+    # --------------------------------
+    # Generate answer
+    # --------------------------------
+
+    try:
+
+        result = generate_answer(
+            request.question
+        )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate answer: {str(e)}"
+        )
 
 
     return {
