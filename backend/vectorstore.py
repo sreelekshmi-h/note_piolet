@@ -1,3 +1,4 @@
+import os
 import chromadb
 
 
@@ -5,7 +6,14 @@ import chromadb
 # ChromaDB configuration
 # --------------------------------
 
-CHROMA_DIR = "chroma_db"
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
+
+CHROMA_DIR = os.path.join(
+    BASE_DIR,
+    "chroma_db"
+)
 
 COLLECTION_NAME = "knowledge_base"
 
@@ -57,12 +65,27 @@ def add_documents(
 
 def search_documents(
     query_embedding,
-    n_results=5
+    n_results=3
 ):
     """
     Search ChromaDB for documents
     similar to the query.
     """
+
+    # Avoid requesting more results
+    # than actually exist.
+    total_documents = collection.count()
+
+    if total_documents == 0:
+        return {
+            "documents": [[]],
+            "metadatas": [[]]
+        }
+
+    n_results = min(
+        n_results,
+        total_documents
+    )
 
     results = collection.query(
         query_embeddings=[query_embedding],
