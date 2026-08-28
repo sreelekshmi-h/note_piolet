@@ -1,2 +1,28 @@
-**/.env
-**/_pycache__/**
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# ChromaDB
+chroma_db/
+
+# Uploaded PDF files
+data/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
