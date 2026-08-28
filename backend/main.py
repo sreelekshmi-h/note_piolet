@@ -22,9 +22,19 @@ app = FastAPI(
 # Data directory
 # --------------------------------
 
-DATA_DIR = "data"
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
 
-os.makedirs(DATA_DIR, exist_ok=True)
+DATA_DIR = os.path.join(
+    BASE_DIR,
+    "data"
+)
+
+os.makedirs(
+    DATA_DIR,
+    exist_ok=True
+)
 
 
 # --------------------------------
